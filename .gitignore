@@ -1,0 +1,7 @@
+.env
+venv/
+__pycache__/
+*.pyc
+chroma_store/
+.streamlit/
+.DS_Store
