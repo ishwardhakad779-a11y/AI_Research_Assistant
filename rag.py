@@ -2,18 +2,20 @@ import os
 import uuid
 
 import chromadb
-from pypdf import PdfReader
-from sentence_transformers import SentenceTransformer
 
-# Free, local embedding model - no API key needed
-embedder = SentenceTransformer("all-MiniLM-L6-v2")
-
-# Persistent local vector store
+# Persistent local vector store.
+# NOTE: We intentionally do NOT use sentence-transformers/torch here —
+# those pull in PyTorch which needs far more RAM than Render's free tier
+# (512MB) provides, causing the app to crash-loop.
+# ChromaDB ships its own lightweight ONNX-based embedding function
+# (all-MiniLM-L6-v2 via onnxruntime) which uses a fraction of the memory.
 chroma_client = chromadb.PersistentClient(path="./chroma_store")
 collection = chroma_client.get_or_create_collection(name="documents")
 
 
 def extract_pdf_text(file_path: str) -> str:
+    from pypdf import PdfReader
+
     reader = PdfReader(file_path)
     text = ""
     for page in reader.pages:
@@ -38,13 +40,13 @@ def add_document(file_path: str, doc_name: str):
     if not chunks:
         return 0
 
-    embeddings = embedder.encode(chunks).tolist()
     ids = [str(uuid.uuid4()) for _ in chunks]
     metadatas = [{"source": doc_name} for _ in chunks]
 
+    # No embeddings passed in -> Chroma automatically embeds using its
+    # default lightweight ONNX embedding function.
     collection.add(
         ids=ids,
-        embeddings=embeddings,
         documents=chunks,
         metadatas=metadatas,
     )
@@ -56,10 +58,8 @@ def retrieve(query: str, top_k: int = 5) -> str:
     if collection.count() == 0:
         return "No documents have been uploaded yet."
 
-    query_embedding = embedder.encode([query]).tolist()
-
     results = collection.query(
-        query_embeddings=query_embedding,
+        query_texts=[query],
         n_results=min(top_k, collection.count()),
     )
 

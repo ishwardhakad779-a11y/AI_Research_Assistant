@@ -5,8 +5,6 @@ langgraph
 langchain-core
 langchain-groq
 chromadb
-sentence-transformers
-torchvision
 pypdf
 tavily-python
 python-dotenv
