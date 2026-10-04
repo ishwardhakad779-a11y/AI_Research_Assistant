@@ -6,6 +6,10 @@ search as a tool through a **custom MCP server**.
 
 ---
 
+**Live Demo:** https://ai-research-assistant-7a2a.onrender.com
+> Free hosting sleeps when idle, so the first load can take about a minute.
+
+
 ## ✨ Features
 
 - 📄 Upload a PDF and it's chunked, embedded, and stored in a vector database (ChromaDB)
