@@ -25,25 +25,15 @@ class ResearchState(TypedDict):
     answer: str
 
 
-# ------------------------------------------------------------
-# Node 1: Document Agent (RAG)
-# ------------------------------------------------------------
 def document_agent(state: ResearchState):
     context = retrieve(state["question"])
     return {"doc_context": context}
 
 
-# ------------------------------------------------------------
-# Node 2: Web Search Agent
-# ------------------------------------------------------------
 def web_agent(state: ResearchState):
     results = web_search(state["question"])
     return {"web_context": results}
 
-
-# ------------------------------------------------------------
-# Node 3: Answer Agent
-# ------------------------------------------------------------
 def answer_agent(state: ResearchState):
     no_docs = "No documents have been uploaded" in state["doc_context"]
 
@@ -75,9 +65,6 @@ the uploaded document, the web, or both.
     return {"answer": response.content.strip()}
 
 
-# ------------------------------------------------------------
-# Graph: straight line, no loops (same pattern as TripMate AI)
-# ------------------------------------------------------------
 builder = StateGraph(ResearchState)
 
 builder.add_node("document", document_agent)
