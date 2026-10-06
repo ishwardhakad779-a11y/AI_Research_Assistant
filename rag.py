@@ -3,12 +3,7 @@ import uuid
 
 import chromadb
 
-# Persistent local vector store.
-# NOTE: We intentionally do NOT use sentence-transformers/torch here —
-# those pull in PyTorch which needs far more RAM than Render's free tier
-# (512MB) provides, causing the app to crash-loop.
-# ChromaDB ships its own lightweight ONNX-based embedding function
-# (all-MiniLM-L6-v2 via onnxruntime) which uses a fraction of the memory.
+
 chroma_client = chromadb.PersistentClient(path="./chroma_store")
 collection = chroma_client.get_or_create_collection(name="documents")
 
@@ -43,8 +38,7 @@ def add_document(file_path: str, doc_name: str):
     ids = [str(uuid.uuid4()) for _ in chunks]
     metadatas = [{"source": doc_name} for _ in chunks]
 
-    # No embeddings passed in -> Chroma automatically embeds using its
-    # default lightweight ONNX embedding function.
+   
     collection.add(
         ids=ids,
         documents=chunks,
